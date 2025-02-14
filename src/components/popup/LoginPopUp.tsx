@@ -1,7 +1,6 @@
 import { useState, ChangeEvent } from "react";
 import { useBackBlur } from "../../context/BackdropProvider";
 
-import BtnLoginDiscord from "../btn/BtnLoginDiscord";
 import BtnJoinTrem from "../btn/BtnJoinTrem";
 
 const LoginPopup = () => {

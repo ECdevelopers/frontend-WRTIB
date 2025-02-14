@@ -6,7 +6,7 @@ interface InputProps {
   name: string;
   type: string;
   value?: string | number;
-  prop: any;
+  errors?: any;
   handleChange: (e: ChangeEvent<HTMLInputElement>) => void;
 }
 
@@ -14,29 +14,30 @@ export default function FloatingLabelInput({
   label,
   name,
   type,
-  value,
-  prop,
+  value = "",
+  errors,
   handleChange,
 }: InputProps) {
   const [isFocused, setIsFocused] = useState(false);
 
   return (
     <div
-      className={`relative mb-4 ${name === "discord_id" ? "hidden" : "block"} `}
+      className={`relative mb-4 ${name === "discord_id" ? "hidden" : "block"}`}
     >
       <label
-        htmlFor={label}
-        className={`absolute w-max text-sm  bg-white px-1 transition-all duration-200 ${
-          isFocused || value
-            ? "top-[-10px] text-sm left-2"
-            : "top-1/2 -translate-y-1/2 left-4"
-        }`}
+        htmlFor={name}
+        className={`absolute bg-white px-1 transition-all duration-200 
+          ${
+            isFocused || value
+              ? "top-[-10px] left-2 text-xs"
+              : "top-1/2 left-4 text-sm -translate-y-1/2"
+          }`}
       >
-        {name}
+        {label}
       </label>
       <input
         type={type}
-        id={label}
+        id={name}
         name={name}
         className="w-full h-10 px-4 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
         value={value}
@@ -44,7 +45,9 @@ export default function FloatingLabelInput({
         onChange={handleChange}
         onBlur={() => setIsFocused(false)}
       />
-      <ValidationError prefix={name} field={name} errors={prop} />
+      {errors && errors[name] && (
+        <ValidationError prefix={label} field={name} errors={errors} />
+      )}
     </div>
   );
 }

@@ -5,7 +5,7 @@ interface TextareaProps {
   label: string;
   name: string;
   value: string;
-  prop: any;
+  errors?: any;
   handleChange: (e: ChangeEvent<HTMLTextAreaElement>) => void;
 }
 
@@ -13,31 +13,35 @@ export default function FloatingLabelTextarea({
   label,
   name,
   value,
-  prop,
+  errors,
   handleChange,
 }: TextareaProps) {
-  const [isFocused, setIsFocused] = useState(false);
+  const [isFocused, setIsFocused] = useState<boolean>(false);
 
   return (
-    <div className="relative mb-4 ">
+    <div className="relative mb-4">
       <label
         htmlFor={name}
-        className={`absolute text-sm bg-white px-1 transition-all duration-200 ${
-          isFocused || value ? "top-[-10px] text-sm left-2" : "top-2 left-4"
-        }`}
+        className={`absolute text-sm bg-white px-1 transition-all duration-200 
+          ${
+            isFocused || value
+              ? "top-[-10px] text-xs left-2"
+              : "top-3 left-4 text-gray-500"
+          }`}
       >
         {label}
       </label>
       <textarea
         id={name}
         name={name}
-        className="w-full h-24 px-4 border py-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+        placeholder=""
+        className="w-full h-24 px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
         value={value}
         onFocus={() => setIsFocused(true)}
         onChange={handleChange}
-        onBlur={() => setIsFocused(value !== "")}
+        onBlur={() => setIsFocused(value.trim() !== "")}
       />
-      <ValidationError prefix={name} field={name} errors={prop} />
+      {errors && <ValidationError prefix={name} field={name} errors={errors} />}
     </div>
   );
 }

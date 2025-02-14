@@ -1,8 +1,3 @@
-interface AssetsInterface {
-  thumbnail: {};
-  icons: {};
-}
-
 import logoImg from "./icon/logo.png";
 import collabIcon from "./icon/colaboratif.png";
 import feedIcon from "./icon/feed.png";

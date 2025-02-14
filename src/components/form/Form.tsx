@@ -51,7 +51,6 @@ const Form = () => {
         name="subjek"
         value={form.subjek}
         label="Subjek"
-        prop={state.errors}
         handleChange={handleInputChange}
       />
 
@@ -59,7 +58,6 @@ const Form = () => {
         name="pesan"
         value={form.pesan}
         label="Pesan"
-        prop={state.errors}
         handleChange={handleInputChange}
       />
 

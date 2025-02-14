@@ -8,20 +8,30 @@ import { useForm } from "@formspree/react";
 import { useUser } from "../context/UserProvider";
 import { assets } from "../assets/assets";
 
+interface FormData {
+  discord_id: number;
+  nama: string;
+  email: string;
+  alasan: string;
+  tim: string;
+}
+
 const JoinRTIB = () => {
   const scriptURL =
     "https://script.google.com/macros/s/AKfycbyMlqSK1Yke_RfAcZuYqQ14ZgLzRwYNoHzLQOPUa_GlZ-JBtV3fkLBWVIZYHDYKAMEz/exec";
 
   const [isVisible, setIsVisible] = useState<boolean>(false);
   const [isRegister, setIsRegister] = useState<boolean>(false);
-  const [state] = useForm("adada");
+  const {} = useForm("adada");
   const { user } = useUser();
+  const { toggleSetPopUP, toggleActive } = useBackBlur();
 
   const avatarUrl = user?.avatar
     ? `https://cdn.discordapp.com/avatars/${user.discord_id}/${user.avatar}.png`
     : `https://cdn.discordapp.com/embed/avatars/${
         Number(user?.discord_id || 0) % 5
       }.png`;
+
   useEffect(() => {
     const timer = setTimeout(() => setIsVisible(true), 1000);
     if (localStorage.getItem("registerRTIB")) {
@@ -29,9 +39,9 @@ const JoinRTIB = () => {
     }
     return () => clearTimeout(timer);
   }, []);
-  const { toggleSetPopUP, toggleActive } = useBackBlur();
-  const [formData, setFormData] = useState({
-    discord_id: user?.discord_id || 123,
+
+  const [formData, setFormData] = useState<FormData>({
+    discord_id: user?.discord_id || 0,
     nama: "",
     email: "",
     alasan: "",
@@ -43,47 +53,35 @@ const JoinRTIB = () => {
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
     >
   ) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const validateForm = (): boolean => {
+    return Object.values(formData).some((value) => value === "");
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    try {
+      const formDataToSend = new FormData();
+      Object.entries(formData).forEach(([key, value]) => {
+        formDataToSend.append(key, String(value));
+      });
 
-    const formDataToSend = new FormData();
+      const response = await fetch(scriptURL, {
+        method: "POST",
+        body: formDataToSend,
+      });
 
-    Object.entries(formData).forEach(([key, value]) => {
-      if (typeof value === "string" || value instanceof Blob) {
-        formDataToSend.append(key, value);
-      } else {
-        formDataToSend.append(key, String(value)); // Konversi nilai lain ke string
-      }
-    });
+      if (!response.ok) throw new Error("Gagal mengirim data.");
 
-    console.log("Data dikirim:", Object.fromEntries(formDataToSend.entries()));
-
-    fetch(scriptURL, {
-      method: "POST",
-      body: formDataToSend,
-    })
-      .then((response) => {
-        console.log("Success!", response);
-        localStorage.setItem("registerRTIB", "registered");
-        setIsRegister(true);
-      })
-      .catch((error) => console.error("Error!", error.message));
-  };
-
-  function validate() {
-    if (
-      formData.nama === "" ||
-      formData.email === "" ||
-      formData.tim === "" ||
-      formData.alasan === ""
-    ) {
-      return true;
+      console.log("Success!", response);
+      localStorage.setItem("registerRTIB", "registered");
+      setIsRegister(true);
+    } catch (error) {
+      console.error("Error!", error);
     }
-    return false;
-  }
+  };
 
   return isVisible ? (
     <motion.section
@@ -101,10 +99,10 @@ const JoinRTIB = () => {
           />
           <div className="profile w-[13rem] rounded-br-xl absolute top-0 left-0 bg-[rgba(225,225,225,.5)] backdrop-blur-sm p-2 border-r border-b border-white">
             <div className="w-[4rem] h-[4rem] bg-black rounded-full mb-1 overflow-hidden">
-              <img src={avatarUrl} alt="" />
+              <img src={avatarUrl} alt="Avatar" />
             </div>
             <div className="text-gray-700">
-              <p className="text-sm">{user?.username || "undefine"}</p>
+              <p className="text-sm">{user?.username || "Undefine"}</p>
               <p className="text-sm">Wow keren banget mau join!</p>
             </div>
           </div>
@@ -115,7 +113,7 @@ const JoinRTIB = () => {
           <p className="text-sm">Bantu harimu lebih produktif dengan kami.</p>
           <p className="text-sm text-gray-600">
             <span className="font-bold text-black">NOTE: </span>
-            Baca yang teliti dulu ya,{" "}
+            Baca yang teliti dulu ya,
             <button
               className="link link-primary"
               onClick={() => {
@@ -123,19 +121,22 @@ const JoinRTIB = () => {
                 toggleActive();
               }}
             >
+              {" "}
               ketentuannya
             </button>{" "}
             sebelum masuk.
           </p>
-          <p className="text-sm mt-2">Ayo! isi form di bawah.</p>
         </div>
 
         {isRegister ? (
-          <div className="py-14">
-            <div className="check w-max h-max mx-auto mb-6">
-              <img src={assets.icons.check} alt="" width={100} />
-            </div>
-            <p className="text-sm text-center">Kamu Sudah Registrasi</p>
+          <div className="py-14 text-center">
+            <img
+              src={assets.icons.check}
+              alt="Check Icon"
+              width={100}
+              className="mx-auto mb-6"
+            />
+            <p className="text-sm">Kamu Sudah Registrasi</p>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="px-0.5">
@@ -160,21 +161,10 @@ const JoinRTIB = () => {
                 <option value="UI/UX Designer">UI/UX Designer</option>
               </select>
             </div>
-
-            <FloatingLabelInput
-              name="discord_id"
-              type="number"
-              label="Discord_Id"
-              prop={state.errors}
-              value={user?.discord_id || 123231}
-              handleChange={handleChange}
-            />
-
             <FloatingLabelInput
               name="nama"
               type="text"
               label="Nama"
-              prop={state.errors}
               value={formData.nama}
               handleChange={handleChange}
             />
@@ -182,25 +172,21 @@ const JoinRTIB = () => {
               name="email"
               type="email"
               label="Email"
-              prop={state.errors}
               value={formData.email}
               handleChange={handleChange}
             />
             <FloatingLabelTextarea
               name="alasan"
               label="Alasan"
-              prop={state.errors}
               value={formData.alasan}
               handleChange={handleChange}
             />
-
             <button
               type="submit"
-              disabled={validate()}
+              disabled={validateForm()}
               className="btn flex items-center justify-center gap-2 w-max transition-all duration-300"
             >
-              <FiSend />
-              KIRIM
+              <FiSend /> KIRIM
             </button>
           </form>
         )}
